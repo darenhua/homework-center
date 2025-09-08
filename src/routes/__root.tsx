@@ -2,9 +2,9 @@ import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 
-import Header from "../components/Header";
-
+import { AuthProvider, useAuth } from "../lib/auth-context";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import { useNavigate } from "@tanstack/react-router";
 
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -12,10 +12,17 @@ interface MyRouterContext {
     queryClient: QueryClient;
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
-    component: () => (
+function RootComponent() {
+    const { user } = useAuth();
+    const pathname = window.location.pathname;
+    const navigate = useNavigate();
+
+    if (!user && pathname !== "/login") {
+        navigate({ to: "/login" });
+    }
+
+    return (
         <>
-            <Header />
             <Outlet />
             <TanstackDevtools
                 config={{
@@ -30,5 +37,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
                 ]}
             />
         </>
+    );
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+    component: () => (
+        <AuthProvider>
+            <RootComponent />
+        </AuthProvider>
     ),
 });
