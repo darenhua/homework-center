@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import logo from "../logo.svg";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/")({
     component: App,
@@ -18,6 +19,8 @@ function AssignmentListItem({ assignment }: { assignment: Assignment }) {
 }
 
 function App() {
+    const { user } = useAuth();
+    console.log(user);
     const assignments = useQuery({
         queryKey: ["assignments"],
         queryFn: () =>
