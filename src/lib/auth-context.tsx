@@ -63,10 +63,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         console.log("AuthProvider useEffect");
         // Get initial session
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
             const currentUser = session?.user ?? null;
             if (currentUser) {
-                ensureUserProfile(currentUser).then(setUser);
+                const profile = await ensureUserProfile(currentUser);
+                setUser(profile);
             }
             setLoading(false);
         });

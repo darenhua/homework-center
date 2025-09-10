@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as NewCourseRouteImport } from './routes/new-course'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 
+const NewCourseRoute = NewCourseRouteImport.update({
+  id: '/new-course',
+  path: '/new-course',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/new-course': typeof NewCourseRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/new-course': typeof NewCourseRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/new-course': typeof NewCourseRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths: '/' | '/login' | '/new-course'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login'
-  id: '__root__' | '/' | '/login'
+  to: '/' | '/login' | '/new-course'
+  id: '__root__' | '/' | '/login' | '/new-course'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
+  NewCourseRoute: typeof NewCourseRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/new-course': {
+      id: '/new-course'
+      path: '/new-course'
+      fullPath: '/new-course'
+      preLoaderRoute: typeof NewCourseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
+  NewCourseRoute: NewCourseRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

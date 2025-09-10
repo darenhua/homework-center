@@ -1,4 +1,5 @@
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 
@@ -13,13 +14,15 @@ interface MyRouterContext {
 }
 
 function RootComponent() {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const pathname = window.location.pathname;
     const navigate = useNavigate();
 
-    if (!user && pathname !== "/login") {
-        navigate({ to: "/login" });
-    }
+    useEffect(() => {
+        if (!loading && !user && pathname !== "/login") {
+            navigate({ to: "/login" });
+        }
+    }, [loading, user, pathname, navigate]);
 
     return (
         <>
@@ -39,7 +42,6 @@ function RootComponent() {
         </>
     );
 }
-
 export const Route = createRootRouteWithContext<MyRouterContext>()({
     component: () => (
         <AuthProvider>
