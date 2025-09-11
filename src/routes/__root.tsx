@@ -14,16 +14,6 @@ interface MyRouterContext {
 }
 
 function RootComponent() {
-    const { user, loading } = useAuth();
-    const pathname = window.location.pathname;
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!loading && !user && pathname !== "/login") {
-            navigate({ to: "/login" });
-        }
-    }, [loading, user, pathname, navigate]);
-
     return (
         <>
             <Outlet />

@@ -1,75 +1,53 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { Session, User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 import type { Tables } from "../../database.types";
+import { useNavigate } from "@tanstack/react-router";
 
 type User = Tables<"users">;
 
 interface AuthContextType {
     user: User | null;
-    loading: boolean;
+    session: Session | null;
 }
 
-async function ensureUserProfile(
+async function getUserProfile(
     supabaseUser: SupabaseUser
 ): Promise<User | null> {
-    // First check if user profile exists
-    const { data: user, error: fetchError } = await supabase
+    const { data, error } = await supabase
         .from("users")
         .select("*")
-        .eq("id", supabaseUser.id)
+        .eq("auth_id", supabaseUser.id)
         .single();
 
-    if (fetchError && fetchError.code !== "PGRST116") {
-        // PGRST116 is "not found"
-        console.error("Error checking user profile:", fetchError);
+    if (error) {
+        console.error("Error getting user profile:", error);
         return null;
     }
 
-    // If user doesn't exist, create profile as fallback
-    if (!user) {
-        const newProfile = {
-            email: supabaseUser.email,
-            full_name: supabaseUser.user_metadata.full_name,
-            avatar_url: supabaseUser.user_metadata.avatar_url,
-        };
-
-        const { data: createdUser, error: insertError } = await supabase
-            .from("users")
-            .insert(newProfile)
-            .select()
-            .single();
-
-        if (insertError) {
-            console.error("Error creating user profile:", insertError);
-            return null;
-        }
-
-        return createdUser;
-    }
-
-    return user;
+    return data;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    loading: true,
+    session: null,
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [session, setSession] = useState<Session | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         console.log("AuthProvider useEffect");
         // Get initial session
         supabase.auth.getSession().then(async ({ data: { session } }) => {
+            setSession(session);
             const currentUser = session?.user ?? null;
             if (currentUser) {
-                const profile = await ensureUserProfile(currentUser);
+                const profile = await getUserProfile(currentUser);
                 setUser(profile);
             }
-            setLoading(false);
         });
 
         // Listen for auth changes
@@ -77,16 +55,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (event, session) => {
             const currentUser = session?.user ?? null;
+            setSession(session);
 
-            // Check/create profile on sign in and initial session
-            if (
-                currentUser &&
-                (event === "SIGNED_IN" || event === "INITIAL_SESSION")
-            ) {
-                const userProfile = await ensureUserProfile(currentUser);
+            // Check profile on sign in and initial session
+            if (currentUser) {
+                const userProfile = await getUserProfile(currentUser);
                 setUser(userProfile);
             } else if (!currentUser) {
                 setUser(null);
+                setSession(null);
+                navigate({ to: "/login" });
             }
         });
 
@@ -94,9 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             subscription.unsubscribe();
         };
     }, []);
-
     return (
-        <AuthContext.Provider value={{ user, loading }}>
+        <AuthContext.Provider value={{ user, session }}>
             {children}
         </AuthContext.Provider>
     );

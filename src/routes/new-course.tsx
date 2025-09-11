@@ -21,22 +21,22 @@ function NewCoursePage() {
 
     // Query all courses
     const { data: courses, isLoading } = useQuery({
-        queryKey: ["available-courses", user?.id],
+        queryKey: ["available-courses"],
         queryFn: async () => {
+            const { data: userCourses } = await supabase
+                .from("user_courses")
+                .select("course_id")
+                .eq("user_id", user!.id);
+
             const { data, error } = await supabase
                 .from("courses")
                 .select("*")
                 .not(
                     "id",
                     "in",
-                    supabase
-                        .from("user_courses")
-                        .select("course_id")
-                        .eq("user_id", user!.id)
+                    `(${(userCourses?.map((course) => course.course_id) || []).join(",")})`
                 )
                 .order("created_at", { ascending: false });
-
-            console.log("TEST", data);
 
             if (error) throw error;
             return data as Tables<"courses">[];

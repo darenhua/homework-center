@@ -98,8 +98,8 @@ function Footer() {
 }
 
 function App() {
-    const { user } = useAuth();
-    console.log(user);
+    const { session } = useAuth();
+    console.log("session", session);
     const assignments = useQuery({
         queryKey: ["assignments"],
         queryFn: () =>
@@ -110,6 +110,8 @@ function App() {
 
     return (
         <div className="flex flex-col items-center">
+            <iframe src="https://www.reddit.com/"></iframe>
+
             {assignments.data?.map((assignment) => (
                 <AssignmentListItem
                     key={assignment.id}
