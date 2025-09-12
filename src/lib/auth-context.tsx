@@ -14,6 +14,7 @@ interface AuthContextType {
 async function getUserProfile(
     supabaseUser: SupabaseUser
 ): Promise<User | null> {
+    console.log("getUserProfile", supabaseUser);
     const { data, error } = await supabase
         .from("users")
         .select("*")
@@ -42,6 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log("AuthProvider useEffect");
         // Get initial session
         supabase.auth.getSession().then(async ({ data: { session } }) => {
+            // if (session == null) {
+            //     navigate({ to: "/login" });
+            //     return;
+            // }
             setSession(session);
             const currentUser = session?.user ?? null;
             if (currentUser) {

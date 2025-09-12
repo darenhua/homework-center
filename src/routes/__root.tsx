@@ -1,11 +1,9 @@
 import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanstackDevtools } from "@tanstack/react-devtools";
 
-import { AuthProvider, useAuth } from "../lib/auth-context";
+import { AuthProvider } from "../lib/auth-context";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-import { useNavigate } from "@tanstack/react-router";
 
 import type { QueryClient } from "@tanstack/react-query";
 
@@ -17,9 +15,9 @@ function RootComponent() {
     return (
         <>
             <Outlet />
-            <TanstackDevtools
+            {/* <TanstackDevtools
                 config={{
-                    position: "bottom-left",
+                    position: "middle-right",
                 }}
                 plugins={[
                     {
@@ -28,7 +26,7 @@ function RootComponent() {
                     },
                     TanStackQueryDevtools,
                 ]}
-            />
+            /> */}
         </>
     );
 }
