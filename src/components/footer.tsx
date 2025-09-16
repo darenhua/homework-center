@@ -4,9 +4,59 @@ import { supabase } from "@/lib/supabase";
 import {
     Tooltip,
     TooltipContent,
+    TooltipProvider,
     TooltipTrigger,
+    UrlStatusTooltip,
 } from "@/components/ui/tooltip";
+import apiClient from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
 
+export interface SourceInfo {
+    url: string | null;
+    synced: boolean;
+}
+
+interface CourseWithColor {
+    id: string;
+    created_at: string;
+    title: string | null;
+    source: SourceInfo[];
+    color: string;
+}
+
+function CoursesBar() {
+    const { session } = useAuth();
+    console.log("CoursesBar", session);
+
+    const coursesQuery = useQuery({
+        queryKey: ["courses"],
+        queryFn: async () => {
+            const response = await apiClient.GET("/courses");
+            if (response.data) {
+                return response.data as CourseWithColor[];
+            }
+            throw new Error(
+                response.error?.message || "Failed to fetch courses"
+            );
+        },
+        enabled: !!session,
+    });
+
+    return (
+        <div className="flex items-center justify-center">
+            {coursesQuery.isLoading && <div>Loading courses...</div>}
+            {coursesQuery.error && (
+                <div>Error loading courses: {coursesQuery.error.message}</div>
+            )}
+
+            <div className="mr-3 flex gap-4">
+                {coursesQuery.data?.map((course) => (
+                    <CourseButton key={course.id} course={course} />
+                ))}
+            </div>
+        </div>
+    );
+}
 function ProfileButton() {
     const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -83,31 +133,49 @@ function ProfileButton() {
     );
 }
 
-function CourseButton() {
-    return (
-        <Tooltip>
-            <TooltipTrigger asChild>
-                <button className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200">
-                    <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                    </svg>
-                </button>
-            </TooltipTrigger>
+const mapColorToBg = (color: string) => {
+    switch (color) {
+        case "red":
+            return "bg-red-500";
+        case "green":
+            return "bg-green-500";
+        case "blue":
+            return "bg-blue-500";
+        case "purple":
+            return "bg-purple-500";
+        case "orange":
+            return "bg-orange-500";
+        case "pink":
+            return "bg-pink-500";
+        case "brown":
+            return "bg-brown-500";
+    }
+};
 
-            <TooltipContent>
-                <p>Add to library</p>
-            </TooltipContent>
-        </Tooltip>
+function CourseButton({ course }: { course: CourseWithColor }) {
+    const anyNotSynced = course.source.some((src) => !src.synced);
+
+    return (
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    {anyNotSynced ? (
+                        <div className="w-10 h-10 text-red-800 border-red-800 border-2 rounded-full bg-red-500 font-bold flex items-center justify-center shadow-lg ">
+                            !
+                        </div>
+                    ) : (
+                        <button
+                            className={`w-10 h-10 border-primary border-2 rounded-full ${mapColorToBg(course.color)} text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200`}
+                        />
+                    )}
+                </TooltipTrigger>
+
+                <UrlStatusTooltip
+                    title={`${course.title}`}
+                    urls={course.source}
+                />
+            </Tooltip>
+        </TooltipProvider>
     );
 }
 
@@ -115,9 +183,7 @@ function Footer() {
     return (
         <div className="fixed bg-white border-t border-border bottom-0 left-0 right-0 p-4 flex justify-between">
             <ProfileButton />
-            <div>
-                <CourseButton />
-            </div>
+            <CoursesBar />
         </div>
     );
 }

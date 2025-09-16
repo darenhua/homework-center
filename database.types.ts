@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      assignments: {
+        Row: {
+          chosen_due_date_id: string | null
+          course_id: string | null
+          created_at: string
+          id: string
+        }
+        Insert: {
+          chosen_due_date_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          chosen_due_date_id?: string | null
+          course_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assigments_chosen_due_date_id_fkey"
+            columns: ["chosen_due_date_id"]
+            isOneToOne: false
+            referencedRelation: "due_dates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assigments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       courses: {
         Row: {
           created_at: string
@@ -32,23 +68,174 @@ export type Database = {
         }
         Relationships: []
       }
+      due_dates: {
+        Row: {
+          assignment_id: string | null
+          created_at: string
+          date: string | null
+          date_certain: boolean | null
+          id: string
+          time_certain: boolean | null
+          title: string | null
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string
+          date?: string | null
+          date_certain?: boolean | null
+          id?: string
+          time_certain?: boolean | null
+          title?: string | null
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string
+          date?: string | null
+          date_certain?: boolean | null
+          id?: string
+          time_certain?: boolean | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "due_dates_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sources: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          id: string
+          source_instructions: string | null
+          url: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          source_instructions?: string | null
+          url?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          source_instructions?: string | null
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_assignments: {
+        Row: {
+          assignment_id: string | null
+          chosen_due_date_id: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          assignment_id?: string | null
+          chosen_due_date_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          assignment_id?: string | null
+          chosen_due_date_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_assignments_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assignments_chosen_due_date_id_fkey"
+            columns: ["chosen_due_date_id"]
+            isOneToOne: false
+            referencedRelation: "due_dates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_auth_details: {
+        Row: {
+          cookies: Json | null
+          created_at: string
+          id: string
+          in_sync: boolean
+          source_id: string | null
+        }
+        Insert: {
+          cookies?: Json | null
+          created_at?: string
+          id?: string
+          in_sync?: boolean
+          source_id?: string | null
+        }
+        Update: {
+          cookies?: Json | null
+          created_at?: string
+          id?: string
+          in_sync?: boolean
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_auth_details_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_courses: {
         Row: {
           course_id: string
           created_at: string
-          id: number
+          id: string
           user_id: string
         }
         Insert: {
           course_id: string
           created_at?: string
-          id?: number
+          id?: string
           user_id: string
         }
         Update: {
           course_id?: string
           created_at?: string
-          id?: number
+          id?: string
           user_id?: string
         }
         Relationships: [
