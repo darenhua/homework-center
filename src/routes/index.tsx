@@ -1,45 +1,63 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/auth-context";
+import { mapColorToBg } from "@/lib/color-to-bg";
 import Footer from "@/components/footer";
-import apiClient from "@/lib/api-client";
+import { useAssignments } from "@/hooks/use-assignments";
+import DueDatesList from "@/components/assignment/due-dates-list";
+import type { components } from "@/types/schema.gen";
+import { DayList } from "@/components/days/day-list";
+import type { DayItem } from "@/components/days/day";
+
+type AssignmentResponse = components["schemas"]["AssignmentResponse"];
+type CourseInfo = components["schemas"]["CourseInfo"];
 
 export const Route = createFileRoute("/")({
     component: App,
 });
 
-function CourseCard({ course }: { course: CourseWithColor }) {
-    return (
-        <div
-            className="p-4 border rounded-lg"
-            style={{ borderColor: course.color }}
-        >
-            <h3 className="font-semibold">
-                {course.title || "Untitled Course"}
-            </h3>
-            <div className="mt-2 text-sm text-gray-600">
-                {course.source.length > 0 ? (
-                    <div>
-                        {course.source.map((src, idx) => (
-                            <div key={idx}>
-                                {src.url || "No URL"} -{" "}
-                                {src.synced ? "Synced" : "Not synced"}
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div>No sources</div>
-                )}
-            </div>
-        </div>
-    );
-}
-
 function App() {
-    return (
-        <div className="flex flex-col items-center p-8">
-            <h1 className="text-2xl font-bold mb-6">My Courses</h1>
+    const { data: assignments, isLoading, error } = useAssignments();
+    // Convert assignments to DayItem format
 
+    const assignmentItems: DayItem[] =
+        assignments?.map((assignment) => {
+            // Format the date to YYYY-MM-DD for the day-list component
+            let formattedDate = new Date().toISOString().split("T")[0];
+            if (assignment.due_date) {
+                const date = new Date(assignment.due_date);
+                formattedDate = date.toISOString().split("T")[0];
+            }
+
+            return {
+                id: assignment.assignment_id,
+                title: assignment.title || "Untitled Assignment",
+                date: formattedDate,
+                color: mapColorToBg(assignment.course.color),
+                description: `Course: ${assignment.course.title || "Untitled Course"}`,
+                url: undefined, // URL would come from a different API endpoint if needed
+            };
+        }) || [];
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col h-screen items-center justify-center">
+                <div>Loading assignments...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col h-screen items-center justify-center">
+                <div>Error loading assignments</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col h-screen items-center font-asul">
+            <main className="max-h-[90vh] h-[90vh] w-full">
+                <DayList items={assignmentItems} />
+            </main>
             <Footer />
         </div>
     );

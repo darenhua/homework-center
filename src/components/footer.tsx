@@ -1,9 +1,9 @@
 import { useAuth } from "@/lib/auth-context";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { mapColorToBg } from "@/lib/color-to-bg";
 import {
     Tooltip,
-    TooltipContent,
     TooltipProvider,
     TooltipTrigger,
     UrlStatusTooltip,
@@ -35,9 +35,7 @@ function CoursesBar() {
             if (response.data) {
                 return response.data as CourseWithColor[];
             }
-            throw new Error(
-                response.error?.message || "Failed to fetch courses"
-            );
+            throw new Error("Failed to fetch courses");
         },
         enabled: !!session,
     });
@@ -133,25 +131,6 @@ function ProfileButton() {
     );
 }
 
-const mapColorToBg = (color: string) => {
-    switch (color) {
-        case "red":
-            return "bg-red-500";
-        case "green":
-            return "bg-green-500";
-        case "blue":
-            return "bg-blue-500";
-        case "purple":
-            return "bg-purple-500";
-        case "orange":
-            return "bg-orange-500";
-        case "pink":
-            return "bg-pink-500";
-        case "brown":
-            return "bg-brown-500";
-    }
-};
-
 function CourseButton({ course }: { course: CourseWithColor }) {
     const anyNotSynced = course.source.some((src) => !src.synced);
 
@@ -160,12 +139,12 @@ function CourseButton({ course }: { course: CourseWithColor }) {
             <Tooltip>
                 <TooltipTrigger asChild>
                     {anyNotSynced ? (
-                        <div className="w-10 h-10 text-red-800 border-red-800 border-2 rounded-full bg-red-500 font-bold flex items-center justify-center shadow-lg ">
+                        <div className="w-6 h-6 text-red-800 border-red-800 border-2 rounded-full bg-red-500 font-bold flex items-center justify-center shadow-lg ">
                             !
                         </div>
                     ) : (
                         <button
-                            className={`w-10 h-10 border-primary border-2 rounded-full ${mapColorToBg(course.color)} text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200`}
+                            className={`w-6 h-6 border-primary border-2 rounded-full ${mapColorToBg(course.color)} text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200`}
                         />
                     )}
                 </TooltipTrigger>

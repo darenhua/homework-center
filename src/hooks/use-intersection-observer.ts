@@ -21,7 +21,7 @@ export function useIntersectionObserver(
             ([entry]) => setEntry(entry),
             {
                 threshold: options.threshold ?? 0.1,
-                root: options.root,
+                root: null,
                 rootMargin: options.rootMargin ?? "0px",
             }
         );
