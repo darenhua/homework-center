@@ -26,8 +26,6 @@ export function AssignmentDetails({
     number,
     color = "bg-yellow-200",
     date = "Sep 10 - Wednesday",
-    url = "www.cs.columbia.edu/~j...",
-    description = "this exam is at 9am...",
 }: AssignmentDetailsProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditingMode, setIsEditingMode] = useState(false);
