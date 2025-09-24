@@ -2,13 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { mapColorToBg } from "@/lib/color-to-bg";
 import Footer from "@/components/footer";
 import { useAssignments } from "@/hooks/use-assignments";
-import DueDatesList from "@/components/assignment/due-dates-list";
-import type { components } from "@/types/schema.gen";
 import { DayList } from "@/components/days/day-list";
 import type { DayItem } from "@/components/days/day";
-
-type AssignmentResponse = components["schemas"]["AssignmentResponse"];
-type CourseInfo = components["schemas"]["CourseInfo"];
 
 export const Route = createFileRoute("/")({
     component: App,
