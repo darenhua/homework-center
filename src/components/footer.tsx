@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/tooltip";
 import apiClient from "@/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "./ui/skeleton";
 
 export interface SourceInfo {
     url: string | null;
@@ -40,14 +41,25 @@ function CoursesBar() {
         enabled: !!session,
     });
 
+    if (coursesQuery.isLoading) {
+        return (
+            <div className="flex items-center justify-center">
+                <Skeleton className="h-8 w-32" />
+            </div>
+        );
+    }
+
     return (
         <div className="flex items-center justify-center">
-            {coursesQuery.isLoading && <div>Loading courses...</div>}
             {coursesQuery.error && (
                 <div>Error loading courses: {coursesQuery.error.message}</div>
             )}
 
-            <div className="mr-3 flex gap-4">
+            <div className="mr-3 flex gap-3 items-center">
+                <div className="font-bold mr-2 text-muted-foreground select-none">
+                    Courses
+                </div>
+
                 {coursesQuery.data?.map((course) => (
                     <CourseButton key={course.id} course={course} />
                 ))}
@@ -85,7 +97,7 @@ function ProfileButton() {
     };
 
     return (
-        <div className="relative" ref={menuRef}>
+        <div className="relative flex gap-6 items-center" ref={menuRef}>
             <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-110"
@@ -113,7 +125,12 @@ function ProfileButton() {
                     </svg>
                 )}
             </button>
-
+            <div>
+                status: last synced 10 minutes ago. 3 assignments found.{" "}
+                <span className="text-red-700 cursor-pointer">
+                    2 courses need action
+                </span>
+            </div>
             {isMenuOpen && (
                 <div className="absolute bottom-16 left-0 bg-card border border-border rounded-lg shadow-lg p-2 min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border mb-2">
@@ -132,14 +149,16 @@ function ProfileButton() {
 }
 
 function CourseButton({ course }: { course: CourseWithColor }) {
-    const anyNotSynced = course.source.some((src) => !src.synced);
+    // const anyNotSynced = course.source.some((src) => !src.synced);
+    const anyNotSynced = false;
 
     return (
         <TooltipProvider>
             <Tooltip>
                 <TooltipTrigger asChild>
                     {anyNotSynced ? (
-                        <div className="w-6 h-6 text-red-800 border-red-800 border-2 rounded-full bg-red-500 font-bold flex items-center justify-center shadow-lg ">
+                        <div className="w-6 h-6 cursor-pointer text-red-200 text-sm  border-red-800 border-2 rounded-full bg-red-500 font-bold flex items-center justify-center shadow-lg ">
+                            {/* onclick it should bring up a modal with instructions */}
                             !
                         </div>
                     ) : (

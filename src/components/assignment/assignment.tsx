@@ -8,6 +8,7 @@ interface AssignmentProps {
     number?: number;
     color?: string;
     onClick?: () => void;
+    onCardClick?: () => void;
 }
 
 export function Assignment({
@@ -15,15 +16,22 @@ export function Assignment({
     number,
     color = "bg-yellow-200",
     onClick,
+    onCardClick,
 }: AssignmentProps) {
     return (
         <div className="relative">
             {/* Assignment card */}
             <div
-                className={`${color} border-2 border-black rounded-2xl p-4 flex items-center gap-4 shadow-sm`}
+                className={`${color} border-2 border-black rounded-2xl p-4 flex items-center gap-4 shadow-sm cursor-pointer`}
+                onClick={onCardClick}
             >
-                {/* Status circle */}
-                <div className="w-6 h-6 rounded-full border-2 border-black bg-white" />
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
+                    <div className="w-6 h-6 rounded-full border-2 border-black bg-white" />
+                </button>
 
                 {/* Title */}
                 <div className="flex-1">
@@ -35,7 +43,10 @@ export function Assignment({
                     variant="outline"
                     size="sm"
                     className="bg-white border-2 cursor-pointer border-black rounded-lg px-4 w-20 py-2 hover:bg-gray-50"
-                    onClick={onClick}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClick?.();
+                    }}
                 >
                     <ArrowRight className="w-4 h-4 text-black" />
                 </Button>

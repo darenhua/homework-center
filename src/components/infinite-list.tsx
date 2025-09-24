@@ -12,6 +12,7 @@ interface InfiniteListProps<T> {
     renderItem: (item: T, index: number) => React.ReactNode;
     pageSize?: number;
     className?: string;
+    scrollContainer?: React.RefObject<HTMLDivElement>;
 }
 
 export function InfiniteList<T>({
@@ -20,6 +21,7 @@ export function InfiniteList<T>({
     renderItem,
     pageSize = 20,
     className,
+    scrollContainer,
 }: InfiniteListProps<T>) {
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
         useInfiniteQuery({
@@ -33,7 +35,11 @@ export function InfiniteList<T>({
 
     const loadMoreRef = React.useRef<HTMLDivElement>(null);
 
-    const entry = useIntersectionObserver(loadMoreRef, {});
+    const entry = useIntersectionObserver(loadMoreRef, {
+        root: scrollContainer?.current ?? null,
+        threshold: 0,
+        rootMargin: "100px",
+    });
     const isVisible = !!entry?.isIntersecting;
 
     React.useEffect(() => {

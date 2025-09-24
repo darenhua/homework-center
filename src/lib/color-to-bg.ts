@@ -14,5 +14,7 @@ export const mapColorToBg = (color: string) => {
             return "bg-pink-200";
         case "brown":
             return "bg-brown-200";
+        case "yellow":
+            return "bg-yellow-200";
     }
 };

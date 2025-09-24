@@ -15,7 +15,7 @@ function RootComponent() {
     return (
         <>
             <Outlet />
-            {/* <TanstackDevtools
+            <TanstackDevtools
                 config={{
                     position: "middle-right",
                 }}
@@ -26,7 +26,7 @@ function RootComponent() {
                     },
                     TanStackQueryDevtools,
                 ]}
-            /> */}
+            />
         </>
     );
 }

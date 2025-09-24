@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { InfiniteList } from "../infinite-list";
 import { Day, type DayItem } from "./day";
 
@@ -60,14 +61,22 @@ export function DayList({ items }: DayListProps) {
         />
     );
 
+    const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
     return (
-        <div className="h-screen overflow-auto p-4 pb-20">
-            <InfiniteList
-                queryKey={["days"]}
-                fetchFn={fetchDays}
-                renderItem={renderDay}
-                pageSize={10}
-            />
+        <div
+            ref={scrollContainerRef}
+            className="h-screen overflow-auto p-4 pt-10 flex justify-center"
+        >
+            <div className="max-w-[1000px] h-full w-full">
+                <InfiniteList
+                    queryKey={["days"]}
+                    fetchFn={fetchDays}
+                    renderItem={renderDay}
+                    pageSize={10}
+                    scrollContainer={scrollContainerRef}
+                />
+            </div>
         </div>
     );
 }
