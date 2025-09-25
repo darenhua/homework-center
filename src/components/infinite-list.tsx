@@ -12,7 +12,7 @@ interface InfiniteListProps<T> {
     renderItem: (item: T, index: number) => React.ReactNode;
     pageSize?: number;
     className?: string;
-    scrollContainer?: React.RefObject<HTMLDivElement>;
+    scrollContainer?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function InfiniteList<T>({
