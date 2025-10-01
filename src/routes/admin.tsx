@@ -45,7 +45,9 @@ function AdminPage() {
     const syncMutation = useMutation({
         mutationFn: async () => {
             const { data } = await apiClient.POST("/sync-courses-temporal", {
-                body: {},
+                body: {
+                    force_refresh: false,
+                },
             });
             return data;
         },
