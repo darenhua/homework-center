@@ -25,11 +25,15 @@ interface SyncStatus {
 function AdminPage() {
     const { user } = useAuth();
     const [status, setStatus] = useState<SyncStatus | null>(null);
-    const [isPolling, setIsPolling] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    if (!user) {
+        return null;
+    }
+
     // Check if user email is the admin email
-    if (!user || user.email !== "dh3243@columbia.edu") {
+    if (user.email !== "dh3243@columbia.edu") {
         return <Navigate to="/" />;
     }
 
@@ -43,42 +47,37 @@ function AdminPage() {
             if (apiError) {
                 setError("Failed to fetch sync status");
                 console.error(apiError);
-                setIsPolling(false);
             } else {
                 setStatus(data as SyncStatus);
                 setError(null);
-
-                // Stop polling if status is completed
-                if (data && (data as SyncStatus).status === "completed") {
-                    setIsPolling(false);
-                }
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");
             console.error(err);
-            setIsPolling(false);
         }
     };
 
-    const handleCheckStatus = () => {
-        setIsPolling(true);
-        fetchSyncStatus();
-    };
-
-    const handleStopPolling = () => {
-        setIsPolling(false);
-    };
-
-    // Polling effect
+    // Always poll while on the page
     useEffect(() => {
-        if (!isPolling) return;
+        // Fetch immediately on mount
+        fetchSyncStatus();
 
+        // Set up polling every 2 seconds
         const interval = setInterval(() => {
             fetchSyncStatus();
-        }, 2000); // Poll every 2 seconds
+        }, 2000);
 
         return () => clearInterval(interval);
-    }, [isPolling]);
+    }, []);
+
+    const handleTriggerSync = () => {
+        setButtonDisabled(true);
+        fetchSyncStatus();
+
+        setTimeout(() => {
+            setButtonDisabled(false);
+        }, 1000);
+    };
 
     return (
         <div className="flex flex-col h-screen items-center justify-center p-8">
@@ -86,24 +85,13 @@ function AdminPage() {
                 <h1 className="text-3xl font-bold">Admin Panel</h1>
 
                 <div className="space-y-4">
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleCheckStatus}
-                            disabled={isPolling}
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                        >
-                            {isPolling ? "Polling..." : "Check Sync Status"}
-                        </button>
-
-                        {isPolling && (
-                            <button
-                                onClick={handleStopPolling}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                            >
-                                Stop Polling
-                            </button>
-                        )}
-                    </div>
+                    <button
+                        onClick={handleTriggerSync}
+                        disabled={buttonDisabled}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    >
+                        Trigger Sync Status Check
+                    </button>
 
                     {error && (
                         <div className="p-4 bg-red-100 text-red-700 rounded">
@@ -115,7 +103,9 @@ function AdminPage() {
                         <div className="p-4 bg-white border rounded-lg shadow">
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-xl font-semibold">Sync Status</h2>
+                                    <h2 className="text-xl font-semibold">
+                                        Sync Status
+                                    </h2>
                                     <span
                                         className={`px-3 py-1 rounded-full text-sm font-medium ${
                                             status.status === "completed"
@@ -129,24 +119,40 @@ function AdminPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-sm text-gray-600">Job Group ID</p>
-                                        <p className="font-mono text-sm">{status.job_sync_group_id}</p>
+                                        <p className="text-sm text-gray-600">
+                                            Job Group ID
+                                        </p>
+                                        <p className="font-mono text-sm">
+                                            {status.job_sync_group_id}
+                                        </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600">Job Syncs Created</p>
-                                        <p className="font-semibold">{status.job_syncs_created}</p>
+                                        <p className="text-sm text-gray-600">
+                                            Job Syncs Created
+                                        </p>
+                                        <p className="font-semibold">
+                                            {status.job_syncs_created}
+                                        </p>
                                     </div>
                                     <div>
-                                        <p className="text-sm text-gray-600">Created At</p>
+                                        <p className="text-sm text-gray-600">
+                                            Created At
+                                        </p>
                                         <p className="text-sm">
-                                            {new Date(status.created_at).toLocaleString()}
+                                            {new Date(
+                                                status.created_at
+                                            ).toLocaleString()}
                                         </p>
                                     </div>
                                     {status.completed_at && (
                                         <div>
-                                            <p className="text-sm text-gray-600">Completed At</p>
+                                            <p className="text-sm text-gray-600">
+                                                Completed At
+                                            </p>
                                             <p className="text-sm">
-                                                {new Date(status.completed_at).toLocaleString()}
+                                                {new Date(
+                                                    status.completed_at
+                                                ).toLocaleString()}
                                             </p>
                                         </div>
                                     )}
@@ -154,24 +160,52 @@ function AdminPage() {
 
                                 {status.result && (
                                     <div className="mt-4 pt-4 border-t">
-                                        <h3 className="font-semibold mb-2">Results</h3>
+                                        <h3 className="font-semibold mb-2">
+                                            Results
+                                        </h3>
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <p className="text-sm text-gray-600">Courses Scraped</p>
-                                                <p className="font-semibold">{status.result.courses_scraped}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-gray-600">Assignments Found</p>
-                                                <p className="font-semibold">{status.result.assignments_found}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-gray-600">Due Dates Found</p>
-                                                <p className="font-semibold">{status.result.due_dates_found}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm text-gray-600">Duration</p>
+                                                <p className="text-sm text-gray-600">
+                                                    Courses Scraped
+                                                </p>
                                                 <p className="font-semibold">
-                                                    {status.result.duration_seconds.toFixed(2)}s
+                                                    {
+                                                        status.result
+                                                            .courses_scraped
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-600">
+                                                    Assignments Found
+                                                </p>
+                                                <p className="font-semibold">
+                                                    {
+                                                        status.result
+                                                            .assignments_found
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-600">
+                                                    Due Dates Found
+                                                </p>
+                                                <p className="font-semibold">
+                                                    {
+                                                        status.result
+                                                            .due_dates_found
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm text-gray-600">
+                                                    Duration
+                                                </p>
+                                                <p className="font-semibold">
+                                                    {status.result.duration_seconds.toFixed(
+                                                        2
+                                                    )}
+                                                    s
                                                 </p>
                                             </div>
                                         </div>
