@@ -2,7 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import apiClient from "@/lib/api-client";
 import { useState } from "react";
-import { queryOptions, useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery, useMutation } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
     component: AdminPage,
@@ -31,7 +31,7 @@ const syncStatusQueryOptions = () =>
                 "/sync-courses-temporal/latest-status",
                 {}
             );
-            return data!;
+            return data! as SyncStatus;
         },
         refetchInterval: 2000, // Poll every 2 seconds
     });
@@ -40,7 +40,16 @@ function AdminPage() {
     const { user } = useAuth();
     const [buttonDisabled, setButtonDisabled] = useState(false);
 
-    const { data: status, error, refetch } = useQuery(syncStatusQueryOptions());
+    const { data: status, error } = useQuery(syncStatusQueryOptions());
+
+    const syncMutation = useMutation({
+        mutationFn: async () => {
+            const { data } = await apiClient.POST("/sync-courses-temporal", {
+                body: {},
+            });
+            return data;
+        },
+    });
 
     if (!user) {
         return null;
@@ -53,7 +62,7 @@ function AdminPage() {
 
     const handleTriggerSync = () => {
         setButtonDisabled(true);
-        refetch();
+        syncMutation.mutate();
 
         setTimeout(() => {
             setButtonDisabled(false);
@@ -71,7 +80,7 @@ function AdminPage() {
                         disabled={buttonDisabled}
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
                     >
-                        Trigger Sync Status Check
+                        Trigger Sync
                     </button>
 
                     {error && (
