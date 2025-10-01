@@ -1,7 +1,8 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import apiClient from "@/lib/api-client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/admin")({
     component: AdminPage,
@@ -22,11 +23,24 @@ interface SyncStatus {
     };
 }
 
+const syncStatusQueryOptions = () =>
+    queryOptions<SyncStatus>({
+        queryKey: ["sync-status"],
+        queryFn: async () => {
+            const { data } = await apiClient.GET(
+                "/sync-courses-temporal/latest-status",
+                {}
+            );
+            return data!;
+        },
+        refetchInterval: 2000, // Poll every 2 seconds
+    });
+
 function AdminPage() {
     const { user } = useAuth();
-    const [status, setStatus] = useState<SyncStatus | null>(null);
     const [buttonDisabled, setButtonDisabled] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+
+    const { data: status, error, refetch } = useQuery(syncStatusQueryOptions());
 
     if (!user) {
         return null;
@@ -37,42 +51,9 @@ function AdminPage() {
         return <Navigate to="/" />;
     }
 
-    const fetchSyncStatus = async () => {
-        try {
-            const { data, error: apiError } = await apiClient.GET(
-                "/sync-courses-temporal/latest-status",
-                {}
-            );
-
-            if (apiError) {
-                setError("Failed to fetch sync status");
-                console.error(apiError);
-            } else {
-                setStatus(data as SyncStatus);
-                setError(null);
-            }
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Unknown error");
-            console.error(err);
-        }
-    };
-
-    // Always poll while on the page
-    useEffect(() => {
-        // Fetch immediately on mount
-        fetchSyncStatus();
-
-        // Set up polling every 2 seconds
-        const interval = setInterval(() => {
-            fetchSyncStatus();
-        }, 2000);
-
-        return () => clearInterval(interval);
-    }, []);
-
     const handleTriggerSync = () => {
         setButtonDisabled(true);
-        fetchSyncStatus();
+        refetch();
 
         setTimeout(() => {
             setButtonDisabled(false);
@@ -95,7 +76,7 @@ function AdminPage() {
 
                     {error && (
                         <div className="p-4 bg-red-100 text-red-700 rounded">
-                            Error: {error}
+                            Error: {error.message}
                         </div>
                     )}
 
