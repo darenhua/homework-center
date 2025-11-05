@@ -34,6 +34,8 @@ export function useAddUserCourses() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["user-courses"] });
+            queryClient.invalidateQueries({ queryKey: ["user-courses-check"] });
+            queryClient.invalidateQueries({ queryKey: ["available-courses"] });
             navigate({ to: "/" });
         },
     });

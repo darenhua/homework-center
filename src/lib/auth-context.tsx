@@ -44,16 +44,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Listen for auth changes
         const {
             data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
+        } = supabase.auth.onAuthStateChange(async (_event, session) => {
             const currentUser = session?.user ?? null;
             setSession(session);
 
             // Check profile on sign in and initial session
             if (currentUser) {
-                setTimeout(async () => {
-                    const userProfile = await getUserProfile(currentUser);
-                    setUser(userProfile);
-                }, 0);
+                const userProfile = await getUserProfile(currentUser);
+                setUser(userProfile);
+                
+                // Check if user has any courses (only redirect from home page)
+                if (userProfile) {
+                    const currentPath = window.location.pathname;
+                    
+                    // Only check for courses if user is on the home page
+                    if (currentPath === "/" || currentPath === "") {
+                        const { data: userCourses, error } = await supabase
+                            .from("user_courses")
+                            .select("course_id")
+                            .eq("user_id", userProfile.id)
+                            .limit(1);
+                        
+                        if (!error && (!userCourses || userCourses.length === 0)) {
+                            // User has no courses, redirect to course selection
+                            navigate({ to: "/new-course" });
+                        }
+                    }
+                }
             } else if (!currentUser) {
                 setUser(null);
                 setSession(null);

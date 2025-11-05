@@ -153,6 +153,51 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/sync-courses-temporal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync Courses Temporal
+         * @description Trigger course synchronization using Temporal workflow.
+         *
+         *     This endpoint starts an asynchronous workflow that:
+         *     1. Creates sync jobs for specified courses (or all user courses)
+         *     2. Scrapes course websites in parallel
+         *     3. Finds assignments in parallel
+         *     4. Finds due dates in parallel
+         *
+         *     Returns immediately with workflow ID for tracking.
+         */
+        post: operations["sync_courses_temporal_sync_courses_temporal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/sync-courses-temporal/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Job Sync Group Statuses */
+        get: operations["get_job_sync_group_statuses_sync_courses_temporal_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -211,6 +256,34 @@ export interface components {
             title?: string | null;
             /** Color */
             color: string;
+        };
+        /**
+         * CourseSyncTemporalRequest
+         * @description Request model for Temporal course sync endpoint.
+         */
+        CourseSyncTemporalRequest: {
+            /** Course Ids */
+            course_ids?: string[] | null;
+            /**
+             * Force Refresh
+             * @default false
+             */
+            force_refresh: boolean;
+        };
+        /**
+         * CourseSyncTemporalResponse
+         * @description Response model for Temporal course sync initiation.
+         */
+        CourseSyncTemporalResponse: {
+            /** Workflow Id */
+            workflow_id: string;
+            /**
+             * Status
+             * @default started
+             */
+            status: string;
+            /** Message */
+            message: string;
         };
         /**
          * CourseWithColor
@@ -465,6 +538,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    sync_courses_temporal_sync_courses_temporal_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CourseSyncTemporalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CourseSyncTemporalResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_job_sync_group_statuses_sync_courses_temporal_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
         };

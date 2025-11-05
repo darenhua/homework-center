@@ -1,16 +1,44 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { mapColorToBg } from "@/lib/color-to-bg";
 import Footer from "@/components/footer";
 import { useAssignments } from "@/hooks/use-assignments";
 import { DayList } from "@/components/days/day-list";
 import type { DayItem } from "@/components/days/day";
+import { useAuth } from "@/lib/auth-context";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/")({
     component: App,
 });
 
 function App() {
+    const { user } = useAuth();
+    const navigate = useNavigate();
     const { data: assignments, isLoading, error } = useAssignments();
+
+    // Check if user has any courses
+    const { data: userCourses } = useQuery({
+        queryKey: ["user-courses-check", user?.id],
+        queryFn: async () => {
+            if (!user) return [];
+            const { data, error } = await supabase
+                .from("user_courses")
+                .select("course_id")
+                .eq("user_id", user.id);
+            if (error) throw error;
+            return data || [];
+        },
+        enabled: !!user,
+    });
+
+    // Redirect to course selection if user has no courses
+    useEffect(() => {
+        if (user && userCourses !== undefined && userCourses.length === 0) {
+            navigate({ to: "/new-course" });
+        }
+    }, [user, userCourses, navigate]);
     // Convert assignments to DayItem format
 
     const assignmentItems: DayItem[] =
@@ -32,7 +60,8 @@ function App() {
             };
         }) || [];
 
-    if (isLoading) {
+    // Show loading while checking courses or loading assignments
+    if (isLoading || userCourses === undefined) {
         return (
             <div className="flex flex-col h-screen items-center justify-center">
                 <div>Loading assignments...</div>

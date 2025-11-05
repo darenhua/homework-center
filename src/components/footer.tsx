@@ -11,6 +11,7 @@ import {
 import apiClient from "@/lib/api-client";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "./ui/skeleton";
+import GradientButton from "./kokonutui/gradient-button";
 
 export interface SourceInfo {
     url: string | null;
@@ -126,10 +127,14 @@ function ProfileButton() {
                 )}
             </button>
             <div>
-                status: last synced 10 minutes ago. 3 assignments found.{" "}
-                <span className="text-red-700 cursor-pointer">
-                    2 courses need action
-                </span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-full shadow-sm">
+                    <span className="text-sm font-semibold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                        cuhomeworkcenter
+                    </span>
+                    <span className="px-2 py-0.5 text-xs font-medium bg-orange-500 text-white rounded-full">
+                        BETA
+                    </span>
+                </div>
             </div>
             {isMenuOpen && (
                 <div className="absolute bottom-16 left-0 bg-card border border-border rounded-lg shadow-lg p-2 min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200">
