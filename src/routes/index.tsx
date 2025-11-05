@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/")({
     component: App,
@@ -63,8 +64,18 @@ function App() {
     // Show loading while checking courses or loading assignments
     if (isLoading || userCourses === undefined) {
         return (
-            <div className="flex flex-col h-screen items-center justify-center">
-                <div>Loading assignments...</div>
+            <div className="flex flex-col h-screen items-center font-asul">
+                <main className="max-h-[90vh] h-[90vh] w-full p-6">
+                    <div className="space-y-4">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="space-y-2 max-w-[1000px] mx-auto">
+                                <Skeleton className="h-6 w-32" />
+                                <Skeleton className="h-20 w-full  mx-auto rounded-lg" />
+                            </div>
+                        ))}
+                    </div>
+                </main>
+                <Footer />
             </div>
         );
     }

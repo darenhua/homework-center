@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { CreateCourseDialog, CourseGrid } from "@/components/courses";
 import { useAddUserCourses } from "@/hooks/mutations";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Tables } from "../../database.types";
 
 export const Route = createFileRoute("/new-course")({
@@ -136,11 +137,13 @@ function NewCoursePage() {
                 {/* Course Grid */}
                 <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-20">
-                            <div className="text-center">
-                                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
-                                <p className="text-gray-600">Loading courses...</p>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="space-y-3">
+                                    <Skeleton className="h-32 w-full rounded-2xl" />
+                                    <Skeleton className="h-6 w-3/4" />
+                                </div>
+                            ))}
                         </div>
                     ) : courses && courses.length > 0 ? (
                         <CourseGrid

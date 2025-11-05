@@ -74,13 +74,7 @@ export function InfiniteList<T>({
             <div
                 ref={loadMoreRef}
                 className="h-20 w-full flex items-center justify-center"
-            >
-                {hasNextPage && !isFetchingNextPage && (
-                    <div className="text-sm text-muted-foreground">
-                        Loading more...
-                    </div>
-                )}
-            </div>
+            />
 
             {isFetchingNextPage && (
                 <div className="space-y-2">
