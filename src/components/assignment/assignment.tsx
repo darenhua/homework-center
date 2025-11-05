@@ -9,6 +9,7 @@ interface AssignmentProps {
     color?: string;
     onClick?: () => void;
     onCardClick?: () => void;
+    url?: string | null;
 }
 
 export function Assignment({
@@ -17,6 +18,7 @@ export function Assignment({
     color = "bg-yellow-200",
     onClick,
     onCardClick,
+    url,
 }: AssignmentProps) {
     return (
         <div className="relative">
@@ -39,17 +41,31 @@ export function Assignment({
                 </div>
 
                 {/* Arrow button */}
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white border-2 cursor-pointer border-black rounded-lg px-4 w-20 py-2 hover:bg-gray-50"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onClick?.();
-                    }}
-                >
-                    <ArrowRight className="w-4 h-4 text-black" />
-                </Button>
+                {url ? (
+                    <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-white border-2 cursor-pointer border-black rounded-lg px-4 w-20 py-2 hover:bg-gray-50 flex items-center justify-center"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                        }}
+                    >
+                        <ArrowRight className="w-4 h-4 text-black" />
+                    </a>
+                ) : (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-2 cursor-pointer border-black rounded-lg px-4 w-20 py-2 hover:bg-gray-50"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick?.();
+                        }}
+                    >
+                        <ArrowRight className="w-4 h-4 text-black" />
+                    </Button>
+                )}
             </div>
 
             {/* Number badge */}

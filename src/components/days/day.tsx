@@ -1,8 +1,12 @@
 import { AssignmentDetails } from "@/components/assignment/assignment-list";
-import type { AssignmentDetailsProps } from "@/components/assignment/assignment-list";
 
-export interface DayItem extends AssignmentDetailsProps {
+export interface DayItem {
     id: string;
+    assignmentId: string;
+    title: string;
+    color?: string;
+    courseTitle?: string;
+    date: string;
 }
 
 interface DayProps {
@@ -38,15 +42,14 @@ export function Day({ date, items, isToday, isTomorrow }: DayProps) {
             </div>
 
             <div className="space-y-2">
-                {items.map((item, index) => (
+                {items.map((item) => (
                     <AssignmentDetails
                         key={item.id}
+                        assignmentId={item.assignmentId}
                         title={item.title}
-                        number={index + 1}
+                        number={item.courseTitle ? undefined : undefined}
                         color={item.color}
-                        date={item.date}
-                        url={item.url}
-                        description={item.description}
+                        courseTitle={item.courseTitle}
                     />
                 ))}
             </div>

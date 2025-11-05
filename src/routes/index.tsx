@@ -41,7 +41,6 @@ function App() {
         }
     }, [user, userCourses, navigate]);
     // Convert assignments to DayItem format
-
     const assignmentItems: DayItem[] =
         assignments?.map((assignment) => {
             // Format the date to YYYY-MM-DD for the day-list component
@@ -53,11 +52,11 @@ function App() {
 
             return {
                 id: assignment.assignment_id,
+                assignmentId: assignment.assignment_id,
                 title: assignment.title || "Untitled Assignment",
                 date: formattedDate,
                 color: mapColorToBg(assignment.course.color),
-                description: `Course: ${assignment.course.title || "Untitled Course"}`,
-                url: undefined, // URL would come from a different API endpoint if needed
+                courseTitle: assignment.course.title || "Untitled Course",
             };
         }) || [];
 

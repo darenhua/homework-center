@@ -17,35 +17,57 @@ export type Database = {
       assignments: {
         Row: {
           chosen_due_date_id: string | null
+          content_hash: string | null
           course_id: string | null
           created_at: string
+          description: string | null
           id: string
+          job_sync_id: string | null
+          source_page_paths: string[] | null
+          title: string | null
         }
         Insert: {
           chosen_due_date_id?: string | null
+          content_hash?: string | null
           course_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          job_sync_id?: string | null
+          source_page_paths?: string[] | null
+          title?: string | null
         }
         Update: {
           chosen_due_date_id?: string | null
+          content_hash?: string | null
           course_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
+          job_sync_id?: string | null
+          source_page_paths?: string[] | null
+          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "assigments_chosen_due_date_id_fkey"
+            foreignKeyName: "assigments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assignments_chosen_due_date_id_fkey"
             columns: ["chosen_due_date_id"]
             isOneToOne: false
             referencedRelation: "due_dates"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "assigments_course_id_fkey"
-            columns: ["course_id"]
+            foreignKeyName: "assignments_job_sync_id_fkey"
+            columns: ["job_sync_id"]
             isOneToOne: false
-            referencedRelation: "courses"
+            referencedRelation: "job_syncs"
             referencedColumns: ["id"]
           },
         ]
@@ -74,27 +96,33 @@ export type Database = {
           created_at: string
           date: string | null
           date_certain: boolean | null
+          description: string | null
           id: string
           time_certain: boolean | null
           title: string | null
+          url: string | null
         }
         Insert: {
           assignment_id?: string | null
           created_at?: string
           date?: string | null
           date_certain?: boolean | null
+          description?: string | null
           id?: string
           time_certain?: boolean | null
           title?: string | null
+          url?: string | null
         }
         Update: {
           assignment_id?: string | null
           created_at?: string
           date?: string | null
           date_certain?: boolean | null
+          description?: string | null
           id?: string
           time_certain?: boolean | null
           title?: string | null
+          url?: string | null
         }
         Relationships: [
           {
@@ -106,11 +134,90 @@ export type Database = {
           },
         ]
       }
+      job_sync_groups: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_sync_groups_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_syncs: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          id: string
+          job_sync_group_id: string | null
+          scraped_tree: Json | null
+          source_id: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          job_sync_group_id?: string | null
+          scraped_tree?: Json | null
+          source_id?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          job_sync_group_id?: string | null
+          scraped_tree?: Json | null
+          source_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_syncs_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_syncs_job_sync_group_id_fkey"
+            columns: ["job_sync_group_id"]
+            isOneToOne: false
+            referencedRelation: "job_sync_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_syncs_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sources: {
         Row: {
           course_id: string | null
           created_at: string
           id: string
+          needs_authentication: boolean
           source_instructions: string | null
           url: string | null
         }
@@ -118,6 +225,7 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           id?: string
+          needs_authentication?: boolean
           source_instructions?: string | null
           url?: string | null
         }
@@ -125,6 +233,7 @@ export type Database = {
           course_id?: string | null
           created_at?: string
           id?: string
+          needs_authentication?: boolean
           source_instructions?: string | null
           url?: string | null
         }
@@ -190,31 +299,34 @@ export type Database = {
       user_auth_details: {
         Row: {
           cookies: Json | null
+          cookies_type: string | null
           created_at: string
           id: string
-          in_sync: boolean
-          source_id: string | null
+          in_sync: boolean | null
+          user_id: string | null
         }
         Insert: {
           cookies?: Json | null
+          cookies_type?: string | null
           created_at?: string
           id?: string
-          in_sync?: boolean
-          source_id?: string | null
+          in_sync?: boolean | null
+          user_id?: string | null
         }
         Update: {
           cookies?: Json | null
+          cookies_type?: string | null
           created_at?: string
           id?: string
-          in_sync?: boolean
-          source_id?: string | null
+          in_sync?: boolean | null
+          user_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "user_auth_details_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: "user_auth_details_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "sources"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -293,7 +405,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      job_sync_group_status:
+        | "SCRAPED_TREE"
+        | "UNIQUE_ASSIGNMENTS"
+        | "ASSIGNMENT_DATES"
+        | "COMPLETE"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -420,6 +536,13 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      job_sync_group_status: [
+        "SCRAPED_TREE",
+        "UNIQUE_ASSIGNMENTS",
+        "ASSIGNMENT_DATES",
+        "COMPLETE",
+      ],
+    },
   },
 } as const
