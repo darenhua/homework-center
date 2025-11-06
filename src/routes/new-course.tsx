@@ -7,10 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CreateCourseDialog, CourseGrid } from "@/components/courses";
 import { useAddUserCourses } from "@/hooks/mutations";
 import { Skeleton } from "@/components/ui/skeleton";
-import apiClient from "@/lib/api-client";
-import type { components } from "@/types/schema.gen";
-
-type CourseWithColor = components["schemas"]["CourseWithColor"];
+import type { Tables } from "../../database.types";
 
 export const Route = createFileRoute("/new-course")({
     component: NewCoursePage,
@@ -24,38 +21,27 @@ function NewCoursePage() {
     );
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Query all courses with colors from API
+    // Query all courses
     const { data: courses, isLoading } = useQuery({
         queryKey: ["available-courses"],
         queryFn: async () => {
-            // Get user's courses
             const { data: userCourses } = await supabase
                 .from("user_courses")
                 .select("course_id")
                 .eq("user_id", user!.id);
 
-            const userCourseIds = new Set(
-                userCourses?.map((uc) => uc.course_id) || []
-            );
+            const { data, error } = await supabase
+                .from("courses")
+                .select("*")
+                .not(
+                    "id",
+                    "in",
+                    `(${(userCourses?.map((course) => course.course_id) || []).join(",")})`
+                )
+                .order("created_at", { ascending: false });
 
-            // Fetch all courses with colors from API
-            const coursesResponse = await apiClient.GET("/courses");
-            if (coursesResponse.error)
-                throw new Error("Failed to fetch courses");
-
-            const allCourses = (coursesResponse.data || []) as CourseWithColor[];
-
-            // Filter out courses the user already has
-            const availableCourses = allCourses.filter(
-                (course) => !userCourseIds.has(course.id)
-            );
-
-            // Sort by created_at descending
-            return availableCourses.sort(
-                (a, b) =>
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime()
-            );
+            if (error) throw error;
+            return data as Tables<"courses">[];
         },
     });
 

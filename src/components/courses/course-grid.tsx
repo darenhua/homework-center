@@ -1,15 +1,15 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { mapColorToBg } from "@/lib/color-to-bg";
-import type { components } from "@/types/schema.gen";
-
-type CourseWithColor = components["schemas"]["CourseWithColor"];
+import type { Tables } from "../../../database.types";
 
 interface CourseGridProps {
-    courses: CourseWithColor[];
+    courses: Tables<"courses">[];
     selectedCourses: Set<string>;
     onCourseToggle: (courseId: string) => void;
     maxSelections?: number;
 }
+
+const colors = ["red", "green", "blue", "purple", "orange", "pink", "brown", "yellow"];
 
 export function CourseGrid({
     courses,
@@ -19,11 +19,12 @@ export function CourseGrid({
 }: CourseGridProps) {
     return (
         <div className="grid font-asul grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {courses.map((course) => {
+            {courses.map((course, index) => {
                 const isSelected = selectedCourses.has(course.id);
                 const isDisabled =
                     !isSelected && selectedCourses.size >= maxSelections;
-                const bgColor = mapColorToBg(course.color);
+                const colorIndex = index % colors.length;
+                const bgColor = mapColorToBg(colors[colorIndex]);
 
                 return (
                     <div
