@@ -8,17 +8,6 @@ interface CourseGridProps {
     maxSelections?: number;
 }
 
-const colorToGradient: Record<string, string> = {
-    red: "from-red-400 to-red-600",
-    green: "from-green-400 to-green-600",
-    blue: "from-blue-400 to-blue-600",
-    purple: "from-purple-400 to-purple-600",
-    orange: "from-orange-400 to-orange-600",
-    pink: "from-pink-400 to-pink-600",
-    brown: "from-amber-600 to-amber-800",
-    yellow: "from-yellow-400 to-yellow-600",
-};
-
 export function CourseGrid({
     courses,
     selectedCourses,
@@ -31,9 +20,7 @@ export function CourseGrid({
                 const isSelected = selectedCourses.has(course.id);
                 const isDisabled =
                     !isSelected && selectedCourses.size >= maxSelections;
-                const gradient =
-                    colorToGradient[course.color || "blue"] ||
-                    "from-blue-400 to-blue-600";
+                const gradient = "from-blue-400 to-blue-600";
 
                 return (
                     <div

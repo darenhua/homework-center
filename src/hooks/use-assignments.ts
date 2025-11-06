@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import apiClient from '@/lib/api-client'
