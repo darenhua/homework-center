@@ -1,8 +1,11 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import type { Tables } from "../../../database.types";
+import { mapColorToBg } from "@/lib/color-to-bg";
+import type { components } from "@/types/schema.gen";
+
+type CourseWithColor = components["schemas"]["CourseWithColor"];
 
 interface CourseGridProps {
-    courses: Tables<"courses">[];
+    courses: CourseWithColor[];
     selectedCourses: Set<string>;
     onCourseToggle: (courseId: string) => void;
     maxSelections?: number;
@@ -20,12 +23,12 @@ export function CourseGrid({
                 const isSelected = selectedCourses.has(course.id);
                 const isDisabled =
                     !isSelected && selectedCourses.size >= maxSelections;
-                const gradient = "from-blue-400 to-blue-600";
+                const bgColor = mapColorToBg(course.color);
 
                 return (
                     <div
                         key={course.id}
-                        className={`group relative cursor-pointer transition-all duration-300 transform hover:scale-105 ${
+                        className={`group relative cursor-pointer transition-all duration-300 ${
                             isDisabled ? "opacity-50 cursor-not-allowed" : ""
                         }`}
                         onClick={() => {
@@ -34,15 +37,15 @@ export function CourseGrid({
                         }}
                     >
                         <div
-                            className={`relative rounded-2xl overflow-hidden shadow-lg ${
+                            className={`relative rounded-2xl overflow-hidden shadow-lg h-full flex flex-col ${
                                 isSelected
                                     ? "ring-4 ring-orange-500 ring-offset-2"
                                     : "shadow-md hover:shadow-xl"
                             }`}
                         >
-                            {/* Gradient background */}
+                            {/* Color background */}
                             <div
-                                className={`h-32 bg-gradient-to-br ${gradient} relative`}
+                                className={`h-32 ${bgColor} relative flex-shrink-0`}
                             >
                                 {/* Selection indicator */}
                                 {isSelected && (
@@ -67,7 +70,7 @@ export function CourseGrid({
                             </div>
 
                             {/* Content */}
-                            <div className="bg-white p-5">
+                            <div className="bg-white p-5 flex-grow">
                                 <div className="flex items-start justify-between">
                                     <h3 className="text-lg font-semibold text-gray-900 leading-tight">
                                         {course.title}
