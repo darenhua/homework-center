@@ -66,7 +66,7 @@ export function DayList({ items }: DayListProps) {
     return (
         <div
             ref={scrollContainerRef}
-            className="h-screen overflow-auto p-4 pt-10 flex justify-center"
+            className="h-full overflow-auto p-4 pt-10 flex justify-center"
         >
             <div className="max-w-[1000px] h-full w-full">
                 <InfiniteList

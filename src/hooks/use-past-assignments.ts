@@ -1,9 +1,9 @@
-import { queryOptions, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import apiClient from '@/lib/api-client'
 
-export interface Assignment {
+export interface PastAssignment {
     assignment_id: string
     title: string | null
     due_date: string | null
@@ -13,13 +13,11 @@ export interface Assignment {
     }
 }
 
-export const baseKey = ['assignments'] as const
-
-export function useAssignments() {
+export function usePastAssignments() {
     const { user } = useAuth()
 
     return useQuery({
-        queryKey: [...baseKey, user?.id],
+        queryKey: ['past-assignments', user?.id],
         queryFn: async () => {
             if (!user) throw new Error('User not authenticated')
 
@@ -112,8 +110,8 @@ export function useAssignments() {
                 }
             })
 
-            // Filter and build current/future assignments
-            const currentAssignments: Assignment[] = []
+            // Filter and build past assignments
+            const pastAssignments: PastAssignment[] = []
 
             for (const assignment of assignments) {
                 const chosenDueDateId =
@@ -125,13 +123,13 @@ export function useAssignments() {
                 const dueDateStr = dueDateMap.get(chosenDueDateId)
                 if (!dueDateStr) continue
 
-                // Check if due date is today or in the future
+                // Check if due date is before today
                 const dueDate = new Date(dueDateStr)
                 dueDate.setHours(0, 0, 0, 0)
 
-                if (dueDate >= today) {
+                if (dueDate < today) {
                     const courseId = assignment.course_id
-                    currentAssignments.push({
+                    pastAssignments.push({
                         assignment_id: assignment.id,
                         title: assignment.title,
                         due_date: dueDateStr,
@@ -143,10 +141,10 @@ export function useAssignments() {
                 }
             }
 
-            // Sort by due_date ascending (nearest assignments first)
-            return currentAssignments.sort((a, b) => {
+            // Sort by due_date descending (most recent past assignments first)
+            return pastAssignments.sort((a, b) => {
                 if (!a.due_date || !b.due_date) return 0
-                return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+                return new Date(b.due_date).getTime() - new Date(a.due_date).getTime()
             })
         },
         enabled: !!user,

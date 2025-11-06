@@ -2,13 +2,16 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { mapColorToBg } from "@/lib/color-to-bg";
 import Footer from "@/components/footer";
 import { useAssignments } from "@/hooks/use-assignments";
+import { usePastAssignments } from "@/hooks/use-past-assignments";
 import { DayList } from "@/components/days/day-list";
+import { PastDayList } from "@/components/days/past-day-list";
 import type { DayItem } from "@/components/days/day";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AssignmentViewToggle } from "@/components/assignment/assignment-view-toggle";
 
 export const Route = createFileRoute("/")({
     component: App,
@@ -17,7 +20,13 @@ export const Route = createFileRoute("/")({
 function App() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [view, setView] = useState<"current" | "past">("current");
     const { data: assignments, isLoading, error } = useAssignments();
+    const {
+        data: pastAssignments,
+        isLoading: isLoadingPast,
+        error: pastError,
+    } = usePastAssignments();
 
     // Check if user has any courses
     const { data: userCourses } = useQuery({
@@ -60,8 +69,35 @@ function App() {
             };
         }) || [];
 
+    // Convert past assignments to DayItem format
+    const pastAssignmentItems: DayItem[] =
+        pastAssignments?.map((assignment) => {
+            // Format the date to YYYY-MM-DD for the day-list component
+            let formattedDate = new Date().toISOString().split("T")[0];
+            if (assignment.due_date) {
+                const date = new Date(assignment.due_date);
+                formattedDate = date.toISOString().split("T")[0];
+            }
+
+            return {
+                id: assignment.assignment_id,
+                assignmentId: assignment.assignment_id,
+                title: assignment.title || "Untitled Assignment",
+                date: formattedDate,
+                color: mapColorToBg(assignment.course.color),
+                courseTitle: assignment.course.title || "Untitled Course",
+            };
+        }) || [];
+
     // Show loading while checking courses or loading assignments
-    if (isLoading || userCourses === undefined) {
+    const isLoadingView =
+        view === "current"
+            ? isLoading || userCourses === undefined
+            : isLoadingPast || userCourses === undefined;
+    const viewError = view === "current" ? error : pastError;
+    const viewItems = view === "current" ? assignmentItems : pastAssignmentItems;
+
+    if (isLoadingView) {
         return (
             <div className="flex flex-col h-screen items-center font-asul">
                 <main className="max-h-[90vh] h-[90vh] w-full p-6">
@@ -79,7 +115,7 @@ function App() {
         );
     }
 
-    if (error) {
+    if (viewError) {
         return (
             <div className="flex flex-col h-screen items-center justify-center">
                 <div>Error loading assignments</div>
@@ -89,8 +125,22 @@ function App() {
 
     return (
         <div className="flex flex-col h-screen items-center font-asul">
-            <main className="max-h-[90vh] h-[90vh] w-full">
-                <DayList items={assignmentItems} />
+            <main className="max-h-[90vh] h-[90vh] w-full flex flex-col">
+                <div className="pt-4 pb-2 flex-shrink-0">
+                    <AssignmentViewToggle 
+                        view={view} 
+                        onViewChange={setView}
+                        currentCount={assignmentItems.length}
+                        pastCount={pastAssignmentItems.length}
+                    />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                    {view === "current" ? (
+                        <DayList items={viewItems} />
+                    ) : (
+                        <PastDayList items={viewItems} />
+                    )}
+                </div>
             </main>
             <Footer />
         </div>
